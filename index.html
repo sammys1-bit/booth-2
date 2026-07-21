@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kawaii Photobooth</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- PASSCODE LOCK SCREEN -->
+  <div id="lock-screen" class="overlay">
+    <div class="lock-box">
+      <h2>🔒 Secret Photobooth</h2>
+      <p>Enter the secret nickname to enter:</p>
+      <input type="password" id="passcode-input" placeholder="Type secret code..." />
+      <button id="unlock-btn">Unlock ✨</button>
+      <p id="lock-error" class="error-msg hidden">Wrong secret code! Try again 💖</p>
+    </div>
+  </div>
+
+  <!-- MAIN PHOTOBOOTH CONTAINER -->
+  <div class="photobooth-container">
+    <header>
+      <h1>PHOTO BOOTH</h1>
+    </header>
+
+    <div class="camera-wrapper">
+      <video id="webcam" autoplay playsinline muted></video>
+      <div id="countdown-overlay" class="hidden">3</div>
+    </div>
+
+    <button id="start-btn">SMILE! 📸</button>
+
+    <!-- HIDDEN CANVAS FOR COMPOSITING STRIPS -->
+    <canvas id="photo-canvas" class="hidden"></canvas>
+  </div>
+
+  <!-- RESULT MODAL -->
+  <div id="result-modal" class="overlay hidden">
+    <div class="modal-box">
+      <h2>Customize Your Strip! ✨</h2>
+      
+      <div class="theme-selector">
+        <label for="theme-select">Choose Frame Style:</label>
+        <select id="theme-select">
+          <option value="template1">🐰 Judy & Nick (Zootopia)</option>
+          <option value="template2">🧸 Polaroid & Snoopy</option>
+          <option value="template3">🐱 Gingham Cat Scrapbook</option>
+          <option value="template4">🍓 Strawberry Cat Ribbons</option>
+          <option value="template5">🎀 Vintage Kawaii</option>
+        </select>
+      </div>
+
+      <div id="strip-container"></div>
+
+      <div class="modal-actions">
+        <button id="download-btn">Download Strip 📸</button>
+        <button id="retake-btn">Retake Photos 🔄</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
