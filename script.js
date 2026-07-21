@@ -21,7 +21,7 @@ const themeSelect = document.getElementById('theme-select');
 
 let capturedPhotos = [];
 
-// Slot coordinates per template with generous width/height to avoid gaps
+// Slot coordinates for all 7 templates
 const THEME_SLOTS = {
   template1: [
     { x: 30, y: 120, w: 540, h: 480 },
@@ -47,6 +47,16 @@ const THEME_SLOTS = {
     { x: 30, y: 120, w: 540, h: 480 },
     { x: 30, y: 580, w: 540, h: 480 },
     { x: 30, y: 1040, w: 540, h: 480 }
+  ],
+  template6: [ // Red Teddy Scrapbook
+    { x: 110, y: 100, w: 430, h: 420 },
+    { x: 110, y: 540, w: 430, h: 420 },
+    { x: 110, y: 980, w: 430, h: 420 }
+  ],
+  template7: [ // Pink Gingham Ribbon
+    { x: 120, y: 100, w: 380, h: 460 },
+    { x: 120, y: 620, w: 380, h: 460 },
+    { x: 120, y: 1160, w: 380, h: 460 }
   ]
 };
 
@@ -61,7 +71,7 @@ function checkPasscode() {
   } else {
     if (lockError) lockError.classList.remove('hidden');
     passInput.value = '';
-    passInput.style.borderColor = '#ff4d6d';
+    passInput.style.borderColor = '#000';
     setTimeout(() => { passInput.style.borderColor = '#000'; }, 1000);
   }
 }
@@ -132,7 +142,7 @@ function takePhoto() {
   const dataUrl = tempCanvas.toDataURL('image/png');
   capturedPhotos.push(dataUrl);
 
-  // Show captured photo directly on screen below video like IRL photobooth
+  // Render thumbnail directly inside camera display
   if (liveThumbnails) {
     const img = document.createElement('img');
     img.src = dataUrl;
