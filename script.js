@@ -21,43 +21,71 @@ const themeSelect = document.getElementById('theme-select');
 
 let capturedPhotos = [];
 
-// Slot coordinates for all 7 templates
-const THEME_SLOTS = {
-  template1: [
-    { x: 30, y: 120, w: 540, h: 480 },
-    { x: 30, y: 580, w: 540, h: 480 },
-    { x: 30, y: 1040, w: 540, h: 480 }
-  ],
-  template2: [
-    { x: 30, y: 120, w: 540, h: 480 },
-    { x: 30, y: 580, w: 540, h: 480 },
-    { x: 30, y: 1040, w: 540, h: 480 }
-  ],
-  template3: [
-    { x: 50, y: 120, w: 500, h: 500 },
-    { x: 50, y: 550, w: 500, h: 500 },
-    { x: 50, y: 1000, w: 500, h: 500 }
-  ],
-  template4: [
-    { x: 100, y: 300, w: 400, h: 400 },
-    { x: 100, y: 680, w: 400, h: 400 },
-    { x: 100, y: 1050, w: 400, h: 400 }
-  ],
-  template5: [
-    { x: 30, y: 120, w: 540, h: 480 },
-    { x: 30, y: 580, w: 540, h: 480 },
-    { x: 30, y: 1040, w: 540, h: 480 }
-  ],
-  template6: [ // Red Teddy Scrapbook
-    { x: 110, y: 100, w: 430, h: 420 },
-    { x: 110, y: 540, w: 430, h: 420 },
-    { x: 110, y: 980, w: 430, h: 420 }
-  ],
-  template7: [ // Pink Gingham Ribbon
-    { x: 120, y: 100, w: 380, h: 460 },
-    { x: 120, y: 620, w: 380, h: 460 },
-    { x: 120, y: 1160, w: 380, h: 460 }
-  ]
+// Template-specific dimensions and precise slot coordinates
+const TEMPLATE_CONFIGS = {
+  template1: {
+    width: 600,
+    height: 1800,
+    slots: [
+      { x: 30, y: 120, w: 540, h: 480 },
+      { x: 30, y: 580, w: 540, h: 480 },
+      { x: 30, y: 1040, w: 540, h: 480 }
+    ]
+  },
+  template2: {
+    width: 600,
+    height: 1800,
+    slots: [
+      { x: 30, y: 120, w: 540, h: 480 },
+      { x: 30, y: 580, w: 540, h: 480 },
+      { x: 30, y: 1040, w: 540, h: 480 }
+    ]
+  },
+  template3: {
+    width: 600,
+    height: 1800,
+    slots: [
+      { x: 50, y: 120, w: 500, h: 500 },
+      { x: 50, y: 550, w: 500, h: 500 },
+      { x: 50, y: 1000, w: 500, h: 500 }
+    ]
+  },
+  template4: {
+    width: 600,
+    height: 1800,
+    slots: [
+      { x: 100, y: 300, w: 400, h: 400 },
+      { x: 100, y: 680, w: 400, h: 400 },
+      { x: 100, y: 1050, w: 400, h: 400 }
+    ]
+  },
+  template5: {
+    width: 600,
+    height: 1800,
+    slots: [
+      { x: 30, y: 120, w: 540, h: 480 },
+      { x: 30, y: 580, w: 540, h: 480 },
+      { x: 30, y: 1040, w: 540, h: 480 }
+    ]
+  },
+  template6: { // Red Teddy Scrapbook
+    width: 600,
+    height: 1600,
+    slots: [
+      { x: 65, y: 75, w: 470, h: 405 },
+      { x: 65, y: 505, w: 470, h: 405 },
+      { x: 65, y: 935, w: 470, h: 405 }
+    ]
+  },
+  template7: { // Pink Gingham Ribbon
+    width: 600,
+    height: 1750,
+    slots: [
+      { x: 60, y: 65, w: 480, h: 510 },
+      { x: 60, y: 645, w: 480, h: 510 },
+      { x: 60, y: 1225, w: 480, h: 510 }
+    ]
+  }
 };
 
 if (unlockBtn) unlockBtn.addEventListener('click', checkPasscode);
@@ -142,7 +170,6 @@ function takePhoto() {
   const dataUrl = tempCanvas.toDataURL('image/png');
   capturedPhotos.push(dataUrl);
 
-  // Render thumbnail directly inside camera display
   if (liveThumbnails) {
     const img = document.createElement('img');
     img.src = dataUrl;
@@ -168,18 +195,18 @@ if (themeSelect) {
 
 async function buildPhotoStrip() {
   const selectedTheme = themeSelect ? themeSelect.value : 'template1';
+  const config = TEMPLATE_CONFIGS[selectedTheme] || TEMPLATE_CONFIGS.template1;
 
-  canvas.width = 600;
-  canvas.height = 1800;
+  canvas.width = config.width;
+  canvas.height = config.height;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const slots = THEME_SLOTS[selectedTheme] || THEME_SLOTS.template1;
-
   for (let i = 0; i < capturedPhotos.length; i++) {
     const photo = await loadImage(capturedPhotos[i]);
-    if (photo && slots[i]) {
-      drawCoverImage(ctx, photo, slots[i].x, slots[i].y, slots[i].w, slots[i].h);
+    if (photo && config.slots[i]) {
+      const slot = config.slots[i];
+      drawCoverImage(ctx, photo, slot.x, slot.y, slot.w, slot.h);
     }
   }
 
