@@ -8,6 +8,9 @@ const lockError = document.getElementById('lock-error');
 const video = document.getElementById('webcam');
 const startBtn = document.getElementById('start-btn');
 const countdownEl = document.getElementById('countdown-overlay');
+const liveThumbnails = document.getElementById('live-thumbnails');
+const statusText = document.getElementById('screen-status-text');
+
 const canvas = document.getElementById('photo-canvas');
 const ctx = canvas.getContext('2d');
 const modal = document.getElementById('result-modal');
@@ -18,32 +21,32 @@ const themeSelect = document.getElementById('theme-select');
 
 let capturedPhotos = [];
 
-// Exact window placement coordinates per template
+// Slot coordinates per template with generous width/height to avoid gaps
 const THEME_SLOTS = {
   template1: [
-    { x: 75, y: 190, w: 450, h: 340 },
-    { x: 75, y: 680, w: 450, h: 340 },
-    { x: 75, y: 1170, w: 450, h: 340 }
+    { x: 30, y: 120, w: 540, h: 480 },
+    { x: 30, y: 580, w: 540, h: 480 },
+    { x: 30, y: 1040, w: 540, h: 480 }
   ],
   template2: [
-    { x: 80, y: 200, w: 440, h: 330 },
-    { x: 80, y: 690, w: 440, h: 330 },
-    { x: 80, y: 1180, w: 440, h: 330 }
+    { x: 30, y: 120, w: 540, h: 480 },
+    { x: 30, y: 580, w: 540, h: 480 },
+    { x: 30, y: 1040, w: 540, h: 480 }
   ],
-  template3: [ // Gingham Cat Scrapbook
-    { x: 190, y: 220, w: 230, h: 320 },
-    { x: 260, y: 690, w: 230, h: 320 },
-    { x: 180, y: 1160, w: 250, h: 180 }
+  template3: [
+    { x: 50, y: 120, w: 500, h: 500 },
+    { x: 50, y: 550, w: 500, h: 500 },
+    { x: 50, y: 1000, w: 500, h: 500 }
   ],
-  template4: [ // Strawberry Cat Ribbons
-    { x: 200, y: 390, w: 200, h: 250 },
-    { x: 200, y: 770, w: 200, h: 250 },
-    { x: 200, y: 1150, w: 200, h: 250 }
+  template4: [
+    { x: 100, y: 300, w: 400, h: 400 },
+    { x: 100, y: 680, w: 400, h: 400 },
+    { x: 100, y: 1050, w: 400, h: 400 }
   ],
   template5: [
-    { x: 70, y: 180, w: 460, h: 350 },
-    { x: 70, y: 670, w: 460, h: 350 },
-    { x: 70, y: 1160, w: 460, h: 350 }
+    { x: 30, y: 120, w: 540, h: 480 },
+    { x: 30, y: 580, w: 540, h: 480 },
+    { x: 30, y: 1040, w: 540, h: 480 }
   ]
 };
 
@@ -59,7 +62,7 @@ function checkPasscode() {
     if (lockError) lockError.classList.remove('hidden');
     passInput.value = '';
     passInput.style.borderColor = '#ff4d6d';
-    setTimeout(() => { passInput.style.borderColor = '#333'; }, 1000);
+    setTimeout(() => { passInput.style.borderColor = '#000'; }, 1000);
   }
 }
 
@@ -80,12 +83,15 @@ if (startBtn) {
   startBtn.addEventListener('click', async () => {
     startBtn.disabled = true;
     capturedPhotos = [];
+    if (liveThumbnails) liveThumbnails.innerHTML = '';
+    if (statusText) statusText.innerText = 'GET READY! 📸';
 
     for (let i = 0; i < 3; i++) {
       await runCountdown(3);
       takePhoto();
     }
 
+    if (statusText) statusText.innerText = 'PROCESSING STRIP... ✨';
     await buildPhotoStrip();
     startBtn.disabled = false;
   });
@@ -123,7 +129,15 @@ function takePhoto() {
   tempCtx.scale(-1, 1);
   tempCtx.drawImage(video, 0, 0, w, h);
 
-  capturedPhotos.push(tempCanvas.toDataURL('image/png'));
+  const dataUrl = tempCanvas.toDataURL('image/png');
+  capturedPhotos.push(dataUrl);
+
+  // Show captured photo directly on screen below video like IRL photobooth
+  if (liveThumbnails) {
+    const img = document.createElement('img');
+    img.src = dataUrl;
+    liveThumbnails.appendChild(img);
+  }
 }
 
 function loadImage(src) {
@@ -150,18 +164,15 @@ async function buildPhotoStrip() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // 1. GET SPECIFIC SLOTS FOR THIS THEME
   const slots = THEME_SLOTS[selectedTheme] || THEME_SLOTS.template1;
 
   for (let i = 0; i < capturedPhotos.length; i++) {
     const photo = await loadImage(capturedPhotos[i]);
     if (photo && slots[i]) {
-      // Center and crop photo to fit without squishing
       drawCoverImage(ctx, photo, slots[i].x, slots[i].y, slots[i].w, slots[i].h);
     }
   }
 
-  // 2. OVERLAY FRAME TEMPLATE
   const frameImg = await loadImage(`${selectedTheme}.png`);
   if (frameImg) {
     const tempCanvas = document.createElement('canvas');
@@ -171,7 +182,6 @@ async function buildPhotoStrip() {
 
     tempCtx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
     
-    // Clear black and pure white frame holes
     const imgData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imgData.data;
     for (let i = 0; i < data.length; i += 4) {
@@ -190,7 +200,6 @@ async function buildPhotoStrip() {
     ctx.drawImage(tempCanvas, 0, 0);
   }
 
-  // 3. RENDER RESULT
   const finalDataUrl = canvas.toDataURL('image/png');
 
   if (stripContainer) {
@@ -200,7 +209,7 @@ async function buildPhotoStrip() {
     finalImage.style.width = '100%';
     finalImage.style.maxHeight = '450px';
     finalImage.style.objectFit = 'contain';
-    finalImage.style.border = '2px solid #333';
+    finalImage.style.border = '2px solid #000';
     finalImage.style.borderRadius = '6px';
     stripContainer.appendChild(finalImage);
   }
@@ -208,7 +217,6 @@ async function buildPhotoStrip() {
   if (modal) modal.classList.remove('hidden');
 }
 
-// Helper to center and crop photos so faces aren't sliced in half
 function drawCoverImage(ctx, img, x, y, w, h) {
   const imgRatio = img.width / img.height;
   const boxRatio = w / h;
@@ -244,5 +252,7 @@ if (downloadBtn) {
 if (retakeBtn) {
   retakeBtn.addEventListener('click', () => { 
     if (modal) modal.classList.add('hidden'); 
+    if (statusText) statusText.innerText = 'SMILE! 📸';
+    if (liveThumbnails) liveThumbnails.innerHTML = '';
   });
 }
