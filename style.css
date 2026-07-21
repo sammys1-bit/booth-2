@@ -1,0 +1,130 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+body {
+  background-color: #5c7f67;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.lock-box, .modal-box {
+  background: #fbf7ee;
+  border: 3px solid #333;
+  border-radius: 12px;
+  padding: 25px;
+  text-align: center;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: 6px 6px 0px #333;
+}
+
+.lock-box input, .theme-selector select {
+  width: 100%;
+  padding: 10px;
+  margin: 15px 0;
+  border: 2px solid #333;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+button {
+  background: #ffb3c6;
+  border: 2px solid #333;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #333;
+  transition: all 0.1s ease;
+}
+
+button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #333;
+}
+
+.photobooth-container {
+  background: #fbf7ee;
+  border: 3px solid #333;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 8px 8px 0px #333;
+}
+
+.camera-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #000;
+  border: 3px solid #333;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 15px 0;
+}
+
+#webcam {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+#countdown-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 80px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 4px 4px 0px #000;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+#download-btn {
+  background: #a8e6cf;
+}
+
+#retake-btn {
+  background: #ffaaa5;
+}
+
+.error-msg {
+  color: #ff4d6d;
+  font-weight: bold;
+  margin-top: 10px;
+}
