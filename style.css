@@ -77,6 +77,25 @@ button:active {
   width: 100%;
   text-align: center;
   box-shadow: 8px 8px 0px #333;
+  position: relative;
+}
+
+.price-tag {
+  display: inline-block;
+  background: #fff3a0;
+  border: 2px solid #333;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #666;
+  margin-top: 4px;
+  margin-bottom: 10px;
 }
 
 .camera-wrapper {
