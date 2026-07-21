@@ -1,192 +1,149 @@
-const SECRET_NICKNAME = "meanie";
-
-const lockScreen = document.getElementById('lock-screen');
-const passInput = document.getElementById('passcode-input');
-const unlockBtn = document.getElementById('unlock-btn');
-const lockError = document.getElementById('lock-error');
-
-const video = document.getElementById('webcam');
-const startBtn = document.getElementById('start-btn');
-const countdownEl = document.getElementById('countdown-overlay');
-const canvas = document.getElementById('photo-canvas');
-const ctx = canvas.getContext('2d');
-const modal = document.getElementById('result-modal');
-const stripContainer = document.getElementById('strip-container');
-const downloadBtn = document.getElementById('download-btn');
-const retakeBtn = document.getElementById('retake-btn');
-const themeSelect = document.getElementById('theme-select');
-
-let capturedPhotos = [];
-
-unlockBtn.addEventListener('click', checkPasscode);
-passInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPasscode(); });
-
-function checkPasscode() {
-  const enteredCode = passInput.value.trim().toLowerCase();
-  if (enteredCode === SECRET_NICKNAME) {
-    lockScreen.style.display = 'none';
-    initWebcam();
-  } else {
-    lockError.classList.remove('hidden');
-    passInput.value = '';
-    passInput.style.borderColor = '#ff4d6d';
-    setTimeout(() => { passInput.style.borderColor = '#333'; }, 1000);
-  }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Courier New', Courier, monospace;
 }
 
-async function initWebcam() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
-      audio: false
-    });
-    video.srcObject = stream;
-    await video.play();
-  } catch (err) {
-    alert("Please allow camera access!");
-  }
+body {
+  background-color: #5c7f67;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
 }
 
-startBtn.addEventListener('click', async () => {
-  startBtn.disabled = true;
-  capturedPhotos = [];
-
-  // Take 3 photos for the strip
-  for (let i = 0; i < 3; i++) {
-    await runCountdown(3);
-    takePhoto();
-  }
-
-  await buildPhotoStrip();
-  startBtn.disabled = false;
-});
-
-function runCountdown(seconds) {
-  return new Promise((resolve) => {
-    countdownEl.classList.remove('hidden');
-    let count = seconds;
-    countdownEl.innerText = count;
-
-    const timer = setInterval(() => {
-      count--;
-      if (count > 0) {
-        countdownEl.innerText = count;
-      } else {
-        clearInterval(timer);
-        countdownEl.classList.add('hidden');
-        resolve();
-      }
-    }, 1000);
-  });
+.hidden {
+  display: none !important;
 }
 
-function takePhoto() {
-  const tempCanvas = document.createElement('canvas');
-  const w = video.videoWidth || 640;
-  const h = video.videoHeight || 480;
-  tempCanvas.width = w;
-  tempCanvas.height = h;
-  const tempCtx = tempCanvas.getContext('2d');
-  
-  // Mirror camera view horizontally
-  tempCtx.translate(w, 0);
-  tempCtx.scale(-1, 1);
-  tempCtx.drawImage(video, 0, 0, w, h);
-
-  capturedPhotos.push(tempCanvas.toDataURL('image/png'));
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-function loadImage(src) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
-    img.src = src;
-  });
+.lock-box, .modal-box {
+  background: #fbf7ee;
+  border: 3px solid #333;
+  border-radius: 12px;
+  padding: 25px;
+  text-align: center;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: 6px 6px 0px #333;
 }
 
-themeSelect.addEventListener('change', () => {
-  if (capturedPhotos.length > 0) buildPhotoStrip();
-});
-
-async function buildPhotoStrip() {
-  const selectedTheme = themeSelect.value;
-
-  canvas.width = 600;
-  canvas.height = 1800;
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // 1. DRAW CAMERA PHOTOS ON BOTTOM LAYER
-  const slots = [
-    { x: 60, y: 160, w: 480, h: 360 },
-    { x: 60, y: 640, w: 480, h: 360 },
-    { x: 60, y: 1120, w: 480, h: 360 }
-  ];
-
-  for (let i = 0; i < capturedPhotos.length; i++) {
-    const photo = await loadImage(capturedPhotos[i]);
-    if (photo && slots[i]) {
-      ctx.drawImage(photo, slots[i].x, slots[i].y, slots[i].w, slots[i].h);
-    }
-  }
-
-  // 2. PROCESS FRAME TEMPLATE TO MAKE BLACK & WHITE BOXES TRANSPARENT
-  const frameImg = await loadImage(`${selectedTheme}.png`);
-  if (frameImg) {
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = canvas.width;
-    tempCanvas.height = canvas.height;
-    const tempCtx = tempCanvas.getContext('2d');
-
-    tempCtx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
-    
-    // Convert near-black AND pure-white photo slots to transparent pixels
-    const imgData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imgData.data;
-    for (let i = 0; i < data.length; i += 4) {
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
-
-      const isBlack = (r < 35 && g < 35 && b < 35);
-      const isPureWhite = (r > 245 && g > 245 && b > 245);
-
-      if (isBlack || isPureWhite) {
-        data[i + 3] = 0; // Set alpha to zero (transparent)
-      }
-    }
-    tempCtx.putImageData(imgData, 0, 0);
-
-    // Overlay transparent frame over photos
-    ctx.drawImage(tempCanvas, 0, 0);
-  }
-
-  // 3. RENDER RESULT IN MODAL
-  const finalDataUrl = canvas.toDataURL('image/png');
-
-  stripContainer.innerHTML = '';
-  const finalImage = new Image();
-  finalImage.src = finalDataUrl;
-  finalImage.style.width = '100%';
-  finalImage.style.maxHeight = '450px';
-  finalImage.style.objectFit = 'contain';
-  finalImage.style.border = '2px solid #333';
-  finalImage.style.borderRadius = '6px';
-  stripContainer.appendChild(finalImage);
-
-  modal.classList.remove('hidden');
+.lock-box input, .theme-selector select {
+  width: 100%;
+  padding: 10px;
+  margin: 15px 0;
+  border: 2px solid #333;
+  border-radius: 6px;
+  font-size: 16px;
 }
 
-downloadBtn.addEventListener('click', () => {
-  const dataUrl = canvas.toDataURL('image/png');
-  const link = document.createElement('a');
-  link.download = 'kawaii-photobooth-strip.png';
-  link.href = dataUrl;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-});
+button {
+  background: #ffb3c6;
+  border: 2px solid #333;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #333;
+  transition: all 0.1s ease;
+}
 
-retakeBtn.addEventListener('click', () => { modal.classList.add('hidden'); });
+button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #333;
+}
+
+.photobooth-container {
+  background: #fbf7ee;
+  border: 3px solid #333;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 8px 8px 0px #333;
+  position: relative;
+}
+
+.price-tag {
+  display: inline-block;
+  background: #fff3a0;
+  border: 2px solid #333;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #666;
+  margin-top: 4px;
+  margin-bottom: 10px;
+}
+
+.camera-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #000;
+  border: 3px solid #333;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 15px 0;
+}
+
+#webcam {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+#countdown-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 80px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 4px 4px 0px #000;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+#download-btn {
+  background: #a8e6cf;
+}
+
+#retake-btn {
+  background: #ffaaa5;
+}
+
+.error-msg {
+  color: #ff4d6d;
+  font-weight: bold;
+  margin-top: 10px;
+}
