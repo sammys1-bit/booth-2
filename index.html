@@ -12,7 +12,7 @@
   <div id="lock-screen" class="overlay">
     <div class="lock-box">
       <h2>🔒 Secret Photobooth</h2>
-      <p>Enter the secret nickname to enter:</p>
+      <p>Enter secret code to enter:</p>
       <input type="password" id="passcode-input" placeholder="Type secret code..." />
       <button id="unlock-btn">Unlock ✨</button>
       <p id="lock-error" class="error-msg hidden">Wrong secret code! Try again 💖</p>
@@ -20,21 +20,46 @@
   </div>
 
   <!-- MAIN PHOTOBOOTH CONTAINER -->
-  <div class="photobooth-container">
-    <header>
-      <div class="price-tag">🎟️ 1 SESSION • FREE</div>
-      <h1>PHOTO BOOTH</h1>
-      <p class="subtitle">✨ Insert photo & smile ✨</p>
-    </header>
-
-    <div class="camera-wrapper">
-      <video id="webcam" autoplay playsinline muted></video>
-      <div id="countdown-overlay" class="hidden">3</div>
+  <div class="photobooth-cabinet">
+    
+    <!-- GREEN HEADER BANNER -->
+    <div class="header-card">
+      <div class="letter-blocks top-row">
+        <span>P</span><span>H</span><span>O</span><span>T</span><span>O</span>
+      </div>
+      <div class="letter-blocks bottom-row">
+        <span>B</span><span>O</span><span>O</span><span>T</span><span>H</span>
+      </div>
+      <div class="stars">★ ★ ★</div>
     </div>
 
-    <button id="start-btn">SMILE! 📸</button>
+    <!-- TILTED BADGE -->
+    <div class="tape-badge">Let's make memories together</div>
 
-    <!-- HIDDEN CANVAS FOR COMPOSITING STRIPS -->
+    <!-- PRICE / INFO SECTION -->
+    <div class="price-section">
+      <div class="mini-price-tag">🎟️ $1.00</div>
+      <div class="info-badge">4x PHOTOS</div>
+    </div>
+
+    <!-- START BUTTON -->
+    <button id="start-btn" class="coin-btn">CLICK HERE TO TAKE PICTURES!</button>
+
+    <!-- CAMERA DISPLAY BOX -->
+    <div class="camera-screen-container">
+      <div class="screen-frame">
+        <video id="webcam" autoplay playsinline muted></video>
+        <div id="countdown-overlay" class="hidden">3</div>
+      </div>
+      
+      <!-- REAL-TIME THUMBNAILS DISPLAYED IN THE SCREEN BAR -->
+      <div class="screen-footer">
+        <p id="screen-status-text">SMILE! 📸</p>
+        <div id="live-thumbnails" class="thumbnail-strip"></div>
+      </div>
+    </div>
+
+    <!-- HIDDEN CANVAS FOR COMPOSITING -->
     <canvas id="photo-canvas" class="hidden"></canvas>
   </div>
 
