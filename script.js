@@ -21,73 +21,6 @@ const themeSelect = document.getElementById('theme-select');
 
 let capturedPhotos = [];
 
-// Template-specific dimensions and precise slot coordinates
-const TEMPLATE_CONFIGS = {
-  template1: {
-    width: 600,
-    height: 1800,
-    slots: [
-      { x: 30, y: 120, w: 540, h: 480 },
-      { x: 30, y: 580, w: 540, h: 480 },
-      { x: 30, y: 1040, w: 540, h: 480 }
-    ]
-  },
-  template2: {
-    width: 600,
-    height: 1800,
-    slots: [
-      { x: 30, y: 120, w: 540, h: 480 },
-      { x: 30, y: 580, w: 540, h: 480 },
-      { x: 30, y: 1040, w: 540, h: 480 }
-    ]
-  },
-  template3: {
-    width: 600,
-    height: 1800,
-    slots: [
-      { x: 50, y: 120, w: 500, h: 500 },
-      { x: 50, y: 550, w: 500, h: 500 },
-      { x: 50, y: 1000, w: 500, h: 500 }
-    ]
-  },
-  template4: {
-    width: 600,
-    height: 1800,
-    slots: [
-      { x: 100, y: 300, w: 400, h: 400 },
-      { x: 100, y: 680, w: 400, h: 400 },
-      { x: 100, y: 1050, w: 400, h: 400 }
-    ]
-  },
-  template5: {
-    width: 600,
-    height: 1800,
-    slots: [
-      { x: 30, y: 120, w: 540, h: 480 },
-      { x: 30, y: 580, w: 540, h: 480 },
-      { x: 30, y: 1040, w: 540, h: 480 }
-    ]
-  },
-  template6: { // Red Teddy Scrapbook
-    width: 600,
-    height: 1600,
-    slots: [
-      { x: 65, y: 75, w: 470, h: 405 },
-      { x: 65, y: 505, w: 470, h: 405 },
-      { x: 65, y: 935, w: 470, h: 405 }
-    ]
-  },
-  template7: { // Pink Gingham Ribbon
-    width: 600,
-    height: 1750,
-    slots: [
-      { x: 60, y: 65, w: 480, h: 510 },
-      { x: 60, y: 645, w: 480, h: 510 },
-      { x: 60, y: 1225, w: 480, h: 510 }
-    ]
-  }
-};
-
 if (unlockBtn) unlockBtn.addEventListener('click', checkPasscode);
 if (passInput) passInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPasscode(); });
 
@@ -193,15 +126,113 @@ if (themeSelect) {
   });
 }
 
+// AUTOMATICALLY DETECTS CUTOUT BOXES FROM ANY STRIP IMAGE
+function detectSlotsFromImage(img) {
+  const c = document.createElement('canvas');
+  c.width = img.width;
+  c.height = img.height;
+  const cx = c.getContext('2d');
+  cx.drawImage(img, 0, 0);
+
+  const imgData = cx.getImageData(0, 0, c.width, c.height);
+  const data = imgData.data;
+
+  let rowHighlights = [];
+  const stepY = Math.max(1, Math.floor(c.height / 400));
+  const stepX = Math.max(1, Math.floor(c.width / 50));
+
+  // Scan rows to find transparent or pure white window regions vertically
+  for (let y = 0; y < c.height; y += stepY) {
+    let transparentCount = 0;
+    let totalInRow = 0;
+    for (let x = Math.floor(c.width * 0.15); x < Math.floor(c.width * 0.85); x += stepX) {
+      const idx = (y * c.width + x) * 4;
+      const r = data[idx], g = data[idx+1], b = data[idx+2], a = data[idx+3];
+      if (a < 50 || (r > 240 && g > 240 && b > 240)) {
+        transparentCount++;
+      }
+      totalInRow++;
+    }
+    rowHighlights.push({ y, isOpen: (transparentCount / totalInRow) > 0.6 });
+  }
+
+  // Group continuous open rows into distinct photo slots
+  let slots = [];
+  let inSlot = false;
+  let startY = 0;
+
+  for (let i = 0; i < rowHighlights.length; i++) {
+    if (rowHighlights[i].isOpen && !inSlot) {
+      inSlot = true;
+      startY = rowHighlights[i].y;
+    } else if (!rowHighlights[i].isOpen && inSlot) {
+      inSlot = false;
+      let height = rowHighlights[i].y - startY;
+      if (height > c.height * 0.08) { // Minimum height threshold to qualify as a photo box
+        slots.push({ startY, height });
+      }
+    }
+  }
+
+  // Find horizontal bounds (left & right edges of the windows)
+  let minX = c.width * 0.4, maxX = c.width * 0.6;
+  if (slots.length > 0) {
+    let sampleY = slots[0].startY + Math.floor(slots[0].height / 2);
+    let leftEdge = null, rightEdge = null;
+    for (let x = 0; x < c.width; x++) {
+      const idx = (sampleY * c.width + x) * 4;
+      const r = data[idx], g = data[idx+1], b = data[idx+2], a = data[idx+3];
+      if (a < 50 || (r > 240 && g > 240 && b > 240)) {
+        if (leftEdge === null) leftEdge = x;
+        rightEdge = x;
+      }
+    }
+    if (leftEdge !== null && rightEdge !== null) {
+      minX = leftEdge;
+      maxX = rightEdge;
+    }
+  }
+
+  // Map into exact slot objects {x, y, w, h}, defaulting to 3 slots if needed
+  let finalSlots = slots.slice(0, 3).map(s => ({
+    x: minX + 4,
+    y: s.startY + 4,
+    w: (maxX - minX) - 8,
+    h: s.height - 8
+  }));
+
+  // Fallback if automatic detection fails on a unique graphic
+  if (finalSlots.length === 0) {
+    const defaultH = Math.floor(c.height * 0.25);
+    finalSlots = [
+      { x: Math.floor(c.width * 0.1), y: Math.floor(c.height * 0.08), w: Math.floor(c.width * 0.8), h: defaultH },
+      { x: Math.floor(c.width * 0.1), y: Math.floor(c.height * 0.38), w: Math.floor(c.width * 0.8), h: defaultH },
+      { x: Math.floor(c.width * 0.1), y: Math.floor(c.height * 0.68), w: Math.floor(c.width * 0.8), h: defaultH }
+    ];
+  }
+
+  return { width: c.width, height: c.height, slots: finalSlots };
+}
+
 async function buildPhotoStrip() {
   const selectedTheme = themeSelect ? themeSelect.value : 'template1';
-  const config = TEMPLATE_CONFIGS[selectedTheme] || TEMPLATE_CONFIGS.template1;
+  
+  // Load the frame image first to read its natural dimensions
+  const frameImg = await loadImage(`${selectedTheme}.png`);
+  if (!frameImg) {
+    alert("Could not load template image!");
+    return;
+  }
+
+  // Automatically compute canvas size and slots based on the uploaded image file
+  const config = detectSlotsFromImage(frameImg);
 
   canvas.width = config.width;
   canvas.height = config.height;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  // Draw photos into the auto-detected slots
   for (let i = 0; i < capturedPhotos.length; i++) {
     const photo = await loadImage(capturedPhotos[i]);
     if (photo && config.slots[i]) {
@@ -210,32 +241,30 @@ async function buildPhotoStrip() {
     }
   }
 
-  const frameImg = await loadImage(`${selectedTheme}.png`);
-  if (frameImg) {
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = canvas.width;
-    tempCanvas.height = canvas.height;
-    const tempCtx = tempCanvas.getContext('2d');
+  // Draw the frame overlay on top
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = canvas.width;
+  tempCanvas.height = canvas.height;
+  const tempCtx = tempCanvas.getContext('2d');
 
-    tempCtx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
-    
-    const imgData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imgData.data;
-    for (let i = 0; i < data.length; i += 4) {
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
+  tempCtx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+  
+  const imgData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imgData.data;
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
 
-      const isBlack = (r < 35 && g < 35 && b < 35);
-      const isPureWhite = (r > 245 && g > 245 && b > 245);
+    const isBlack = (r < 35 && g < 35 && b < 35);
+    const isPureWhite = (r > 245 && g > 245 && b > 245);
 
-      if (isBlack || isPureWhite) {
-        data[i + 3] = 0;
-      }
+    if (isBlack || isPureWhite) {
+      data[i + 3] = 0;
     }
-    tempCtx.putImageData(imgData, 0, 0);
-    ctx.drawImage(tempCanvas, 0, 0);
   }
+  tempCtx.putImageData(imgData, 0, 0);
+  ctx.drawImage(tempCanvas, 0, 0);
 
   const finalDataUrl = canvas.toDataURL('image/png');
 
