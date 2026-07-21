@@ -6,7 +6,7 @@
 }
 
 body {
-  background-color: #5c7f67;
+  background-color: #3b5042;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -24,7 +24,7 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.75);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -33,80 +33,169 @@ body {
 
 .lock-box, .modal-box {
   background: #fbf7ee;
-  border: 3px solid #333;
+  border: 3px solid #000;
   border-radius: 12px;
   padding: 25px;
   text-align: center;
   max-width: 480px;
   width: 90%;
-  box-shadow: 6px 6px 0px #333;
+  box-shadow: 6px 6px 0px #000;
 }
 
 .lock-box input, .theme-selector select {
   width: 100%;
   padding: 10px;
   margin: 15px 0;
-  border: 2px solid #333;
+  border: 2px solid #000;
   border-radius: 6px;
   font-size: 16px;
 }
 
-button {
-  background: #ffb3c6;
-  border: 2px solid #333;
-  padding: 10px 20px;
-  font-size: 16px;
+/* STRIPED CABINET CONTAINER */
+.photobooth-cabinet {
+  background: repeating-linear-gradient(
+    90deg,
+    #a2d2ff,
+    #a2d2ff 25px,
+    #ffffff 25px,
+    #ffffff 50px
+  );
+  border: 4px solid #000;
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 8px 8px 0px #000;
+}
+
+/* HEADER CARD */
+.header-card {
+  background-color: #6ed39d;
+  border: 3px solid #000;
+  border-radius: 12px;
+  width: 100%;
+  padding: 15px 10px 10px;
+  text-align: center;
+  box-shadow: 4px 4px 0px #000;
+}
+
+.letter-blocks {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.letter-blocks span {
+  background: #fff;
+  border: 2px solid #000;
+  font-weight: 900;
+  font-size: 20px;
+  padding: 4px 8px;
+  box-shadow: 2px 2px 0px #000;
+  display: inline-block;
+}
+
+.letter-blocks span:nth-child(odd) {
+  transform: rotate(-3deg);
+}
+
+.letter-blocks span:nth-child(even) {
+  transform: rotate(3deg);
+}
+
+.stars {
+  font-size: 14px;
+  letter-spacing: 4px;
+  margin-top: 4px;
+}
+
+/* TILTED BADGE */
+.tape-badge {
+  background: #fff;
+  border: 2px solid #000;
   font-weight: bold;
-  border-radius: 6px;
+  font-size: 13px;
+  padding: 6px 16px;
+  transform: rotate(-2deg);
+  box-shadow: 3px 3px 0px #000;
+  text-align: center;
+}
+
+/* PRICE & BADGE */
+.price-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.mini-price-tag {
+  background: #fff;
+  border: 2px solid #000;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.info-badge {
+  background: #ffb3c6;
+  border: 3px solid #000;
+  width: 100%;
+  padding: 12px;
+  font-weight: 900;
+  font-size: 16px;
+  text-align: center;
+  box-shadow: 4px 4px 0px #000;
+  letter-spacing: 1px;
+}
+
+/* COIN / START BUTTON */
+.coin-btn {
+  background: #ffe66d;
+  border: 3px solid #000;
+  padding: 12px;
+  width: 85%;
+  font-size: 14px;
+  font-weight: 900;
   cursor: pointer;
-  box-shadow: 3px 3px 0px #333;
+  box-shadow: 4px 4px 0px #000;
   transition: all 0.1s ease;
 }
 
-button:active {
+.coin-btn:active {
   transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0px #333;
+  box-shadow: 2px 2px 0px #000;
 }
 
-.photobooth-container {
-  background: #fbf7ee;
-  border: 3px solid #333;
+.coin-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* CAMERA SCREEN FRAME */
+.camera-screen-container {
+  background: #ffe680;
+  border: 4px solid #000;
   border-radius: 12px;
-  padding: 20px;
-  max-width: 500px;
+  padding: 8px;
   width: 100%;
-  text-align: center;
-  box-shadow: 8px 8px 0px #333;
-  position: relative;
+  box-shadow: 4px 4px 0px #000;
 }
 
-.price-tag {
-  display: inline-block;
-  background: #fff3a0;
-  border: 2px solid #333;
-  padding: 4px 12px;
-  font-size: 12px;
-  font-weight: bold;
-  border-radius: 20px;
-  margin-bottom: 8px;
-}
-
-.subtitle {
-  font-size: 14px;
-  color: #666;
-  margin-top: 4px;
-  margin-bottom: 10px;
-}
-
-.camera-wrapper {
+.screen-frame {
   position: relative;
   width: 100%;
   aspect-ratio: 4 / 3;
-  background: #000;
-  border: 3px solid #333;
-  border-radius: 8px;
+  background: #111;
+  border: 3px solid #000;
+  border-radius: 4px;
   overflow: hidden;
-  margin: 15px 0;
 }
 
 #webcam {
@@ -121,10 +210,45 @@ button:active {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 80px;
+  font-size: 70px;
   font-weight: bold;
   color: #fff;
   text-shadow: 4px 4px 0px #000;
+}
+
+.screen-footer {
+  background: #fff;
+  border: 3px solid #000;
+  border-radius: 4px;
+  margin-top: 8px;
+  padding: 8px;
+  text-align: center;
+  min-height: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#screen-status-text {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/* LIVE THUMBNAILS DISPLAYED REAL-TIME */
+.thumbnail-strip {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  justify-content: center;
+}
+
+.thumbnail-strip img {
+  width: 50px;
+  height: 40px;
+  object-fit: cover;
+  border: 2px solid #000;
+  border-radius: 4px;
 }
 
 .modal-actions {
